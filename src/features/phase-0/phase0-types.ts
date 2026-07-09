@@ -35,18 +35,3 @@ export type Phase0JudgementDraft = {
   unsafeToActDirectly: boolean;
   humanReviewNote?: string;
 };
-
-export type Phase0ScreenMaterialField = {
-  label: string;
-  value: string;
-  reason: string;
-};
-
-export type Phase0ScreenMaterialReview = {
-  messyRecordId: string;
-  safeDisplayFields: Phase0ScreenMaterialField[];
-  warningLabels: string[];
-  missingContextHints: string[];
-  taskBlockers: string[];
-  humanCheckPrompt: string;
-};
