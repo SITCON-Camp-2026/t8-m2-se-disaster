@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import messyReports from "../src/fixtures/phase-0/messy-reports.json";
-import { createPhase0Judgement } from "../src/features/phase-0/phase0-heuristics";
+import {
+  createPhase0CandidateClassification,
+  createPhase0Judgement,
+} from "../src/features/phase-0/phase0-heuristics";
 
 describe("phase 0 heuristics", () => {
   it("loads the current phase 0 messy data", () => {
@@ -41,5 +44,34 @@ describe("phase 0 heuristics", () => {
 
     expect(judgement.possibleKind).toBe("unknown");
     expect(judgement.suggestedNextStep).toBe("send_to_human_review");
+  });
+
+  it("creates candidate classifications without marking records as usable", () => {
+    const classifications = messyReports.map(
+      createPhase0CandidateClassification,
+    );
+
+    expect(classifications).toHaveLength(messyReports.length);
+    expect(
+      classifications.filter(
+        (classification) => classification.unsafeToActDirectly,
+      ),
+    ).toHaveLength(messyReports.length);
+    expect(
+      classifications.every((classification) =>
+        classification.screenMaterial.warningLabels.includes(
+          "查核狀態不是已確認",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps classifications as candidates based on visible text signals", () => {
+    const helpLike = createPhase0CandidateClassification(messyReports[0]);
+    const noticeLike = createPhase0CandidateClassification(messyReports[4]);
+
+    expect(helpLike.possibleKind).toBe("help_request_candidate");
+    expect(noticeLike.possibleKind).toBe("announcement_candidate");
+    expect(noticeLike.confidence).toBe("low");
   });
 });

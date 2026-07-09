@@ -45,10 +45,7 @@ export function Phase0JudgementCard({
         <StatusBadge status={record.verificationStatus} />
       </div>
 
-      <p>
-        這張卡只保留保守的安全邊界，不是 agent 對這筆資料的整理答案。請讓 coding
-        agent 實作可建立、編輯與刪除的整理草稿。
-      </p>
+      <p>這張卡保留 starter 的安全預設，提醒小組：候選分類仍需人工檢查。</p>
 
       <dl className="judgement-summary">
         <div>
@@ -66,14 +63,14 @@ export function Phase0JudgementCard({
       </dl>
 
       <p>
-        能否直接行動：
+        使用限制：
         <strong>
-          {judgement.unsafeToActDirectly ? "不可直接行動" : "仍需確認情境"}
+          {judgement.unsafeToActDirectly ? "不可派工" : "仍需確認"}
         </strong>
       </p>
 
       <section>
-        <h4>目前只有安全預設</h4>
+        <h4>安全預設</h4>
         <ul>
           {judgement.evidence.map((item) => (
             <li key={item}>{item}</li>
@@ -82,7 +79,7 @@ export function Phase0JudgementCard({
       </section>
 
       <section>
-        <h4>目前卡住的地方</h4>
+        <h4>待確認處</h4>
         <ul>
           {judgement.blockers.map((item) => (
             <li key={item}>{item}</li>

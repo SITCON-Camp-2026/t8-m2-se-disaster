@@ -178,6 +178,8 @@ button {
 
 .workbench__queue,
 .workbench__checklist,
+.workbench__review-panel,
+.classification-card,
 .judgement-card {
   border: 1px solid #dbe4ef;
   border-radius: 8px;
@@ -197,6 +199,12 @@ button {
   text-align: left;
 }
 
+.workbench__queue-kind {
+  color: #5f6b7a;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
 .workbench__queue button.active {
   border-color: #245d9d;
   background: #eef6ff;
@@ -205,6 +213,12 @@ button {
 .workbench__main {
   display: grid;
   gap: 16px;
+  scroll-margin-top: 16px;
+}
+
+.workbench__main:focus {
+  outline: 3px solid rgb(36 93 157 / 24%);
+  outline-offset: 6px;
 }
 
 .judgement-card__header {
@@ -213,11 +227,22 @@ button {
   gap: 16px;
 }
 
+.classification-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .judgement-card h3,
-.workbench__checklist h3 {
+.workbench__checklist h3,
+.workbench__review-panel h3,
+.classification-card h3,
+.classification-table h3 {
   margin-top: 0;
 }
 
+.classification-summary,
 .judgement-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -225,30 +250,115 @@ button {
   margin: 16px 0;
 }
 
+.classification-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.classification-summary div,
 .judgement-summary div {
   border-radius: 8px;
   padding: 10px;
   background: #f4f7fb;
 }
 
+.classification-summary dt,
 .judgement-summary dt {
   color: #5f6b7a;
   font-size: 0.85rem;
 }
 
+.classification-summary dd,
 .judgement-summary dd {
   margin: 4px 0 0;
   font-weight: 700;
 }
 
+.classification-card h4,
 .judgement-card h4 {
   margin-bottom: 8px;
 }
 
+.classification-card ul,
 .judgement-card ul,
-.workbench__checklist ul {
+.workbench__checklist ul,
+.workbench__review-panel ul {
   padding-left: 20px;
   line-height: 1.6;
+}
+
+.workbench__review-panel {
+  align-self: start;
+}
+
+.workbench__review-panel p {
+  line-height: 1.6;
+}
+
+.safety-chip {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #fff3cd;
+  color: #8a5a00;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.classification-table {
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fbfcfe;
+}
+
+.classification-table__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.classification-table__header p:last-child {
+  color: #5f6b7a;
+}
+
+.classification-table__scroller {
+  overflow-x: auto;
+}
+
+.classification-table table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.classification-table th,
+.classification-table td {
+  border-top: 1px solid #dbe4ef;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.classification-table thead th {
+  border-top: 0;
+  color: #5f6b7a;
+  font-size: 0.9rem;
+}
+
+.classification-table__row--selected {
+  background: #eef6ff;
+}
+
+.classification-table button {
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #ffffff;
+  cursor: pointer;
 }
 
 .status-badge,
@@ -317,7 +427,14 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .classification-summary,
   .judgement-summary {
     grid-template-columns: 1fr;
+  }
+
+  .classification-table__header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 }

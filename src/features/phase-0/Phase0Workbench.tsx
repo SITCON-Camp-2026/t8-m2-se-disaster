@@ -1,8 +1,26 @@
+import { useRef } from "react";
 import { RecordCard } from "../../components/RecordCard";
 import { StatusBadge } from "../../components/StatusBadge";
+import {
+  Phase0ClassificationCard,
+  Phase0ClassificationTable,
+  Phase0ReviewPanel,
+} from "./Phase0ClassificationPanel";
 import { Phase0JudgementCard } from "./Phase0JudgementCard";
-import { createPhase0Judgement } from "./phase0-heuristics";
-import type { Phase0MessyRecord } from "./phase0-types";
+import {
+  createPhase0CandidateClassification,
+  createPhase0Judgement,
+} from "./phase0-heuristics";
+import type { Phase0MessyRecord, Phase0PossibleKind } from "./phase0-types";
+
+const queueKindLabels: Record<Phase0PossibleKind, string> = {
+  help_request_candidate: "求助候選",
+  site_status_candidate: "地點狀態候選",
+  task_candidate: "任務候選",
+  assignment_candidate: "支援或指派候選",
+  announcement_candidate: "公告候選",
+  unknown: "候選類型待判斷",
+};
 
 export function Phase0Workbench({
   records,
@@ -13,38 +31,69 @@ export function Phase0Workbench({
   selectedRecordId: string;
   onSelect: (recordId: string) => void;
 }) {
+  const detailRef = useRef<HTMLDivElement>(null);
   const selectedRecord =
     records.find((record) => record.id === selectedRecordId) ?? records[0];
   const safetyBoundary = createPhase0Judgement(selectedRecord);
+  const classifications = records.map(createPhase0CandidateClassification);
+  const selectedClassification =
+    classifications.find(
+      (classification) => classification.messyRecordId === selectedRecord.id,
+    ) ?? createPhase0CandidateClassification(selectedRecord);
+
+  function selectAndFocus(recordId: string) {
+    onSelect(recordId);
+    window.requestAnimationFrame(() => {
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      detailRef.current?.focus({ preventScroll: true });
+    });
+  }
 
   return (
     <div className="workbench">
       <div className="workbench__intro">
-        <p className="eyebrow">整理工作台</p>
-        <h2>第一階段的成功不是分類正確，而是把為什麼現在還不能判斷說清楚。</h2>
+        <p className="eyebrow">分類整理模式</p>
+        <h2>先把每筆原始資訊分成候選類型，並列出待確認處。</h2>
         <p>
-          這裡先只標示安全邊界，真正的候選判斷要由小組和 coding agent
-          補上；這不是 runtime LLM 分析，也不是正式資料模型。
+          分類只輔助閱讀；不是已確認事實、不是正式資料模型，也不能用來派工。
         </p>
       </div>
 
       <div className="workbench__layout">
         <aside className="workbench__queue" aria-label="選擇原始資訊">
-          {records.map((record) => (
-            <button
-              className={record.id === selectedRecord.id ? "active" : ""}
-              key={record.id}
-              type="button"
-              onClick={() => onSelect(record.id)}
-            >
-              <span>{record.id}</span>
-              <StatusBadge status={record.verificationStatus} />
-            </button>
-          ))}
+          {records.map((record) => {
+            const classification = classifications.find(
+              (item) => item.messyRecordId === record.id,
+            );
+
+            return (
+              <button
+                className={record.id === selectedRecord.id ? "active" : ""}
+                key={record.id}
+                type="button"
+                onClick={() => selectAndFocus(record.id)}
+              >
+                <span>{record.id}</span>
+                <span className="workbench__queue-kind">
+                  {classification
+                    ? queueKindLabels[classification.possibleKind]
+                    : queueKindLabels.unknown}
+                </span>
+                <StatusBadge status={record.verificationStatus} />
+              </button>
+            );
+          })}
         </aside>
 
-        <div className="workbench__main">
+        <div
+          className="workbench__main"
+          ref={detailRef}
+          tabIndex={-1}
+          aria-live="polite"
+        >
           <RecordCard record={selectedRecord} />
+
+          <Phase0ClassificationCard classification={selectedClassification} />
 
           <Phase0JudgementCard
             judgement={safetyBoundary}
@@ -52,19 +101,15 @@ export function Phase0Workbench({
           />
         </div>
 
-        <aside className="workbench__checklist">
-          <h3>第一階段完成檢查</h3>
-          <ul>
-            <li>Starter 已載入 {records.length} 筆原始資訊</li>
-            <li>請 agent 加上建立、編輯、刪除或重設整理草稿</li>
-            <li>至少讓 6 筆原始資訊被嘗試整理成可編輯草稿</li>
-            <li>至少挑 2 個候選判斷由人類質疑或修正</li>
-            <li>
-              把資料品質問題寫進 observations，並記錄 agent 哪裡不能直接相信
-            </li>
-          </ul>
-        </aside>
+        <Phase0ReviewPanel classification={selectedClassification} />
       </div>
+
+      <Phase0ClassificationTable
+        classifications={classifications}
+        records={records}
+        selectedRecordId={selectedRecord.id}
+        onSelect={selectAndFocus}
+      />
     </div>
   );
 }
